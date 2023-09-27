@@ -24,26 +24,41 @@
             background-repeat: no-repeat;
             margin-top: 5px;
         }
-
         h1 {
             margin-top: 20px;
             color: #ffffff;
         }
-
-        #question-container {
+        #score-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #2b99cb;
+            font-weight: bolder;
+        }
+        #clock-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 18px;
+            color: #c71818;
+        }
+        #timer {
+            font-weight: bold;
+            color: red;
+        }
+        .game-container {
             margin-top: 20px;
-            background-color:#26a7de;  
+            background-color: #26a7de;
             border: 2px solid #333;
             padding: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
-
         #object-image {
             max-width: 100%;
             border: 5px solid #333;
             margin-bottom: 20px;
         }
-
         #answer-options {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -51,7 +66,6 @@
             margin-top: 20px;
             align-items: center;
         }
-
         .answer-button {
             padding: 10px 20px;
             font-size: 18px;
@@ -63,44 +77,36 @@
             border-radius: 5px;
             transition: background-color 0.3s, color 0.3s;
         }
-
         .skip-button {
-            padding: 12px 12px; /* Reduced width */
+            padding: 12px 12px;
             font-size: 18px;
             cursor: pointer;
-            background-color: #e74444; 
+            background-color: #e74444;
             color: #fff;
             border: none;
             border-radius: 5px;
             transition: background-color 0.3s;
             margin-top: 10px;
-            display: none; /* Initially hidden */
+            display: none;
         }
-
-        #score-container {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 24px;
-            color: #2b99cb;
-            font-weight: bolder;
-        }
-
-        #clock-container {
-            position: absolute;
-            top: 20px;
-            right: 20px;
+        #hints-button {
+            padding: 12px 12px;
             font-size: 18px;
-            color: #c71818;
+            cursor: pointer;
+            background-color: #157d39;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            margin-top: 10px;
         }
-
-        #timer {
-            font-weight: bold;
-            color: red;     
+        #button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
         }
-
         .correct-answer {
-            background-color: rgb(193, 206, 12); 
+            background-color: rgb(193, 206, 12);
             color: white;
         }
     </style>
@@ -112,20 +118,20 @@
         Score: <span id="score">0</span>
     </div>
     <div id="clock-container">
-        <span id="clock">10</span> seconds
+        <span id="clock">20</span> seconds
     </div>
-    <div id="question-container">
+    <div class="game-container" id="question-container">
         <img id="object-image" src="" alt="Object Image">
         <div id="answer-options">
             <!-- Answer options will be generated here -->
         </div>
         <div id="button-container">
             <button id="skip-button" class="skip-button" onclick="skipQuestion()">Skip</button>
+            <button id="hints-button" class="hint-button" onclick="useHint()">Hints</button>
         </div>
     </div>
-
-    <audio id="correct-sound" src="correct.mp3"></audio> <!-- Add your sound file here -->
-
+    <audio id="correct-sound" src="correct.mp3"></audio>
+    <audio id="wrong-sound" src="wrong.mp3"></audio>
     <script>
         const objects = [
             { name: "Elephant", image: "images/elephant.jpg", correctAnswer: "Elephant" },
@@ -134,32 +140,36 @@
             { name: "Fox", image: "images/fox.jpg", correctAnswer: "Fox" },
             { name: "Lion", image: "images/lion.jpg", correctAnswer: "Lion" },
         ];
-
+    
         let currentObjectIndex = 0;
         let score = 0;
-        let clock = 10;
+        let clock = 20;
         let clockInterval;
         let gameStarted = false;
-
+        let hintsLeft = 3;
+        let highlightedIndices = [];
+        let shuffledOptions = [];
+    
         function loadNextObject() {
             if (!gameStarted) {
                 gameStarted = true;
-                document.getElementById("skip-button").style.display = "block"; // Show the skip button
+                document.getElementById("skip-button").style.display = "block";
             }
-
+    
             if (currentObjectIndex < objects.length) {
                 const object = objects[currentObjectIndex];
                 document.getElementById("object-image").src = object.image;
-
+    
                 const answerOptions = document.getElementById("answer-options");
                 answerOptions.innerHTML = '';
-                const shuffledOptions = shuffleArray([
+    
+                shuffledOptions = shuffleArray([
                     object.correctAnswer,
                     "Dragon",
                     "Snake",
                     "Eagle"
                 ]);
-
+    
                 shuffledOptions.forEach(optionText => {
                     const optionButton = document.createElement("button");
                     optionButton.className = "answer-button";
@@ -167,42 +177,90 @@
                     optionButton.addEventListener("click", () => checkAnswer(optionText));
                     answerOptions.appendChild(optionButton);
                 });
-
+    
+                updateAnswerButtonsUI();
+    
                 currentObjectIndex++;
                 resetClock();
             } else {
                 endGame();
             }
         }
-
+    
         function checkAnswer(selectedAnswer) {
             const object = objects[currentObjectIndex - 1];
             if (selectedAnswer === object.correctAnswer) {
                 score++;
                 document.getElementById("score").textContent = score;
-                playCorrectSound(); // Play sound for correct answers
+                playCorrectSound();
+            } else {
+                playWrongSound();
             }
             loadNextObject();
         }
-
+    
         function skipQuestion() {
             loadNextObject();
         }
-
+    
+        function useHint() {
+            if (hintsLeft > 0 && highlightedIndices.length === 0) {
+                const object = objects[currentObjectIndex - 1];
+                const correctAnswerIndex = shuffledOptions.indexOf(object.correctAnswer);
+    
+                let incorrectAnswerIndex;
+                do {
+                    incorrectAnswerIndex = Math.floor(Math.random() * shuffledOptions.length);
+                } while (incorrectAnswerIndex === correctAnswerIndex);
+    
+                // Highlight the two answers.
+                highlightedIndices = [correctAnswerIndex, incorrectAnswerIndex];
+    
+                // Update the UI to highlight the answers.
+                updateAnswerButtonsUI();
+    
+                hintsLeft--;
+    
+                document.getElementById("hints-button").textContent = `Hints (${hintsLeft} left)`;
+            }
+        }
+    
+        function updateAnswerButtonsUI() {
+            const answerButtons = document.querySelectorAll(".answer-button");
+    
+            // Remove highlighting from all answer buttons.
+            answerButtons.forEach((button, index) => {
+                button.classList.remove("correct-answer");
+                button.classList.remove("wrong-answer");
+            });
+    
+            // Highlight the answers specified by the highlightedIndices array.
+            highlightedIndices.forEach((index) => {
+                answerButtons[index].classList.add("correct-answer");
+            });
+        }
+    
         function playCorrectSound() {
             const correctSound = document.getElementById("correct-sound");
             correctSound.play();
         }
-
+    
+        function playWrongSound() {
+            const wrongSound = document.getElementById("wrong-sound");
+            wrongSound.play();
+        }
+    
         function startGame() {
             currentObjectIndex = 0;
             score = 0;
-            clock = 10;
+            clock = 20;
+            hintsLeft = 3;
             document.getElementById("score").textContent = score;
+            document.getElementById("hints-button").textContent = `Hints (${hintsLeft} left)`;
             loadNextObject();
             clockInterval = setInterval(updateClock, 1000);
         }
-
+    
         function updateClock() {
             if (clock > 0) {
                 clock--;
@@ -211,19 +269,19 @@
                 checkAnswer('');
             }
         }
-
+    
         function resetClock() {
             clearInterval(clockInterval);
-            clock = 10;
+            clock = 20;
             document.getElementById("clock").textContent = clock;
             clockInterval = setInterval(updateClock, 1000);
         }
-
+    
         function endGame() {
             clearInterval(clockInterval);
             alert("Game Over! Your Score: " + score);
         }
-
+    
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -231,8 +289,9 @@
             }
             return array;
         }
-
+    
         startGame();
     </script>
+    
 </body>
 </html>
