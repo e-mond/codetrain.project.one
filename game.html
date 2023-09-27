@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Object Identification Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #040918;
+            margin: 0;
+            padding: 0;
+        }
+        .game-icon {
+            display: block;
+            margin: 0 auto;
+            width: 100px;
+            height: 100px;
+            border-radius: 40px;
+            border: 5px solid #45a049;
+            background-image: url('images/IC1.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            margin-top: 5px;
+        }
+
+        h1 {
+            margin-top: 20px;
+            color: #ffffff;
+        }
+
+        #question-container {
+            margin-top: 20px;
+            background-color:#26a7de;  
+            border: 2px solid #333;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #object-image {
+            max-width: 100%;
+            border: 5px solid #333;
+            margin-bottom: 20px;
+        }
+
+        #answer-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            align-items: center;
+        }
+
+        .answer-button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #151335;
+            color: #fff;
+            border: none;
+            border: 3px solid #dedddd;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .skip-button {
+            padding: 12px 12px; /* Reduced width */
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #e74444; 
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+            display: none; /* Initially hidden */
+        }
+
+        #score-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #2b99cb;
+            font-weight: bolder;
+        }
+
+        #clock-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 18px;
+            color: #c71818;
+        }
+
+        #timer {
+            font-weight: bold;
+            color: red;     
+        }
+
+        .correct-answer {
+            background-color: rgb(193, 206, 12); 
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-icon"><a href="index.html"></a></div>
+    <h1>Object Identification Game</h1>
+    <div id="score-container">
+        Score: <span id="score">0</span>
+    </div>
+    <div id="clock-container">
+        <span id="clock">10</span> seconds
+    </div>
+    <div id="question-container">
+        <img id="object-image" src="" alt="Object Image">
+        <div id="answer-options">
+            <!-- Answer options will be generated here -->
+        </div>
+        <div id="button-container">
+            <button id="skip-button" class="skip-button" onclick="skipQuestion()">Skip</button>
+        </div>
+    </div>
+
+    <audio id="correct-sound" src="correct.mp3"></audio> <!-- Add your sound file here -->
+
+    <script>
+        const objects = [
+            { name: "Elephant", image: "images/elephant.jpg", correctAnswer: "Elephant" },
+            { name: "Cat", image: "images/cat.jpg", correctAnswer: "Cat" },
+            { name: "Dog", image: "images/dog.jpg", correctAnswer: "Dog" },
+            { name: "Fox", image: "images/fox.jpg", correctAnswer: "Fox" },
+            { name: "Lion", image: "images/lion.jpg", correctAnswer: "Lion" },
+        ];
+
+        let currentObjectIndex = 0;
+        let score = 0;
+        let clock = 10;
+        let clockInterval;
+        let gameStarted = false;
+
+        function loadNextObject() {
+            if (!gameStarted) {
+                gameStarted = true;
+                document.getElementById("skip-button").style.display = "block"; // Show the skip button
+            }
+
+            if (currentObjectIndex < objects.length) {
+                const object = objects[currentObjectIndex];
+                document.getElementById("object-image").src = object.image;
+
+                const answerOptions = document.getElementById("answer-options");
+                answerOptions.innerHTML = '';
+                const shuffledOptions = shuffleArray([
+                    object.correctAnswer,
+                    "Dragon",
+                    "Snake",
+                    "Eagle"
+                ]);
+
+                shuffledOptions.forEach(optionText => {
+                    const optionButton = document.createElement("button");
+                    optionButton.className = "answer-button";
+                    optionButton.textContent = optionText;
+                    optionButton.addEventListener("click", () => checkAnswer(optionText));
+                    answerOptions.appendChild(optionButton);
+                });
+
+                currentObjectIndex++;
+                resetClock();
+            } else {
+                endGame();
+            }
+        }
+
+        function checkAnswer(selectedAnswer) {
+            const object = objects[currentObjectIndex - 1];
+            if (selectedAnswer === object.correctAnswer) {
+                score++;
+                document.getElementById("score").textContent = score;
+                playCorrectSound(); // Play sound for correct answers
+            }
+            loadNextObject();
+        }
+
+        function skipQuestion() {
+            loadNextObject();
+        }
+
+        function playCorrectSound() {
+            const correctSound = document.getElementById("correct-sound");
+            correctSound.play();
+        }
+
+        function startGame() {
+            currentObjectIndex = 0;
+            score = 0;
+            clock = 10;
+            document.getElementById("score").textContent = score;
+            loadNextObject();
+            clockInterval = setInterval(updateClock, 1000);
+        }
+
+        function updateClock() {
+            if (clock > 0) {
+                clock--;
+                document.getElementById("clock").textContent = clock;
+            } else {
+                checkAnswer('');
+            }
+        }
+
+        function resetClock() {
+            clearInterval(clockInterval);
+            clock = 10;
+            document.getElementById("clock").textContent = clock;
+            clockInterval = setInterval(updateClock, 1000);
+        }
+
+        function endGame() {
+            clearInterval(clockInterval);
+            alert("Game Over! Your Score: " + score);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        startGame();
+    </script>
+</body>
+</html>
