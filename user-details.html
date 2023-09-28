@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter User Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #151335;
+            margin: 0;
+            padding: 0;
+            color: #fff;
+        }
+
+        .game-icon {
+            display: block;
+            margin: 0 auto;
+            width: 100px;
+            height: 100px;
+            border-radius: 40px;
+            border: 5px solid #45a049;
+            background-image: url('images/IC1.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            margin-top: 20px;
+        }
+
+        .header {
+            background-color: #4CAF50;
+            padding: 10px 0;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #fff;
+        }
+
+        #user-details-container {
+            background-color: #fff;
+            border: 2px solid #333;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            width: 80%;
+            margin: 20px auto;
+            border-radius: 10px;
+            text-align: left;
+            color: #333;
+            margin-top: 40px;
+        }
+
+        h2 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 18px;
+            display: block;
+            margin-top: 10px;
+            color: #555;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #start-game-button, #clear-button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            text-align: center;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        #start-game-button:hover, #clear-button:hover {
+            background-color: #a09e45;
+        }
+
+        .error-message {
+            color: #f00;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+   
+    <div class="header">
+        <div class="game-icon"><a href="index.html"></a></div>
+        <h1>Enter User Details</h1>
+    </div>
+
+    <div id="user-details-container">
+        <h2>Enter Your Details</h2>
+        <form id="user-details-form">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="country">Country:</label>
+            <input type="text" id="country" name="country" required>
+
+            <button type="submit" id="start-game-button">Start Game</button>
+            <button type="button" id="clear-button">Clear</button>
+        </form>
+        <div class="error-message" id="error-message"></div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const userDetailsForm = document.getElementById("user-details-form");
+            const startGameButton = document.getElementById("start-game-button");
+            const clearButton = document.getElementById("clear-button");
+            const errorMessage = document.getElementById("error-message");
+
+            userDetailsForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const name = document.getElementById("name").value;
+                const country = document.getElementById("country").value;
+
+                if (name.trim() === "" || country.trim() === "") {
+                    errorMessage.textContent = "Please enter both name and country.";
+                } else {
+                    // Store user details in localStorage
+                    localStorage.setItem("userName", name);
+                    localStorage.setItem("userCountry", country);
+
+                    // Redirect to the game page
+                    window.location.href = "game.html";
+                }
+            });
+
+            clearButton.addEventListener("click", function () {
+                document.getElementById("name").value = "";
+                document.getElementById("country").value = "";
+                errorMessage.textContent = "";
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scoreboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #040918;
+            margin: 0;
+            padding: 0;
+            color: #ffffff;
+        }
+        .game-icon {
+            display: block;
+            margin: 0 auto;
+            width: 100px;
+            height: 100px;
+            border-radius: 40px;
+            border: 5px solid #45a049;
+            background-image: url('images/IC1.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            margin-top: 5px;
+        }
+
+        h1 {
+            margin-top: 40px;
+        }
+
+        a {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: #fff;
+            text-decoration: none;
+            border: none;
+            border: 3px solid #dedddd;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+            margin-top: 90px;
+        }
+
+        a:hover {
+            background-color: #a09e45;
+        }
+
+        #score-table-container {
+            text-align: center; 
+            margin-top: 40px;
+        }
+
+        #score-table {
+            background-color: #26a7de;
+            border: 2px solid #333;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            margin: 10px auto; 
+        }
+
+        #score-table th,
+        #score-table td {
+            padding: 10px;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-icon"><a href="index.html"></a></div>
+    <h1>Scoreboard</h1>
+    <div id="score-table-container">
+        <table id="score-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Country</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+             
+            </tbody>
+        </table>
+    </div>
+    <a href="game.html">Back to Game</a>
+</body>
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const scoreTable = document.getElementById("score-table").getElementsByTagName("tbody")[0];
+
+        // Retrieve and display scoreboard from local storage
+        const scoreboardData = JSON.parse(localStorage.getItem("scoreboard")) || [];
+
+        // Sort the scoreboard by score in descending order
+        scoreboardData.sort((a, b) => b.score - a.score);
+
+        for (const entry of scoreboardData) {
+            const row = scoreTable.insertRow();
+            const nameCell = row.insertCell(0);
+            const countryCell = row.insertCell(1);
+            const scoreCell = row.insertCell(2);
+
+            nameCell.textContent = entry.name;
+            countryCell.textContent = entry.country;
+            scoreCell.textContent = entry.score;
+        }
+    });
+</script>
+</html>
