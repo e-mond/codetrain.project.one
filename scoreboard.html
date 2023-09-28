@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scoreboard</title>
+    <link rel="icon" href="images/IC1.png" type="image/x-icon">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -88,9 +89,8 @@
     <a href="game.html">Back to Game</a>
 </body>
 <script>
-
     document.addEventListener("DOMContentLoaded", function () {
-        const scoreTable = document.getElementById("score-table").getElementsByTagName("tbody")[0];
+        const scoreTable = document.querySelector("tbody"); // Updated selector
 
         // Retrieve and display scoreboard from local storage
         const scoreboardData = JSON.parse(localStorage.getItem("scoreboard")) || [];
@@ -110,4 +110,5 @@
         }
     });
 </script>
+
 </html>
